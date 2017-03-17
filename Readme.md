@@ -5,7 +5,7 @@ This project is forked from Marc Steven's Hashclash project [hashclash](https://
 Same to hashclash, this tool depends on boost. `make` will download libboost and finish everything.
 
 # Compilation
-In Makefile.local, one needs to specify the CUDA SDK information to enable CUDA. Several variables need to be set properly, including `CUDA_TK`, `CUDA_SDK`, `CUDA_SAMPLE_DIR` and `CUDA_SAMPLE_DIR`.
+In Makefile.local, one needs to specify the CUDA SDK information to enable CUDA. Several variables need to be set properly, including `CUDA_TK`, `CUDA_SDK` and `CUDA_SAMPLE_DIR`.
 
 # Performance Tuning
 In scripts/cpc.sh, several variables are defined:
