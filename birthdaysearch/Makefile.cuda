@@ -2,7 +2,7 @@
 include ../Makefile.local
 
 DEST            = ../md5birthdaysearch_cuda
-OBJECTS         = main.cuda.o dostep.cuda.o birthday.cuda.o ppe_main.cuda.o storage.cuda.o cuda_md5.cuda11.o
+OBJECTS         = main.cuda.o dostep.cuda.o birthday.cuda.o ppe_main.cuda.o storage.cuda.o cuda_md5.cuda20.o
 HEADERS         = *.hpp config.h ../libhashutil5-v1/hashutil5/*.hpp
 CPPFLAGS	+= -pthread
 LINKFLAGS	+= -lpthread
@@ -25,12 +25,12 @@ proper: clean
 %.cuda.o: %.cpp
 	$(CPP) $(CPPFLAGS) $(DESTFLAGS)  -I. -I.. -c $< -o $@
 
-%.cuda10.o: %.cu
-	$(CUDA_CPP) $(CUDA_CPPFLAGS_10) $(DESTFLAGS)  -I. -I.. -c $< -o $@ || $(CUDA_CPP) $(CUDA_FIX) $(CUDA_CPPFLAGS_10) $(DESTFLAGS)  -I. -I.. -c $< -o $@
-%.cuda11.o: %.cu
-	$(CUDA_CPP) $(CUDA_CPPFLAGS_11) $(DESTFLAGS)  -I. -I.. -c $< -o $@ || $(CUDA_CPP) $(CUDA_FIX) $(CUDA_CPPFLAGS_11) $(DESTFLAGS)  -I. -I.. -c $< -o $@
-%.cuda13.o: %.cu
-	$(CUDA_CPP) $(CUDA_CPPFLAGS_13) $(DESTFLAGS)  -I. -I.. -c $< -o $@ || $(CUDA_CPP) $(CUDA_FIX) $(CUDA_CPPFLAGS_13) $(DESTFLAGS)  -I. -I.. -c $< -o $@
+#%.cuda10.o: %.cu
+#	$(CUDA_CPP) $(CUDA_CPPFLAGS_10) $(DESTFLAGS)  -I. -I.. -c $< -o $@ || $(CUDA_CPP) $(CUDA_FIX) $(CUDA_CPPFLAGS_10) $(DESTFLAGS)  -I. -I.. -c $< -o $@
+#%.cuda11.o: %.cu
+#	$(CUDA_CPP) $(CUDA_CPPFLAGS_11) $(DESTFLAGS)  -I. -I.. -c $< -o $@ || $(CUDA_CPP) $(CUDA_FIX) $(CUDA_CPPFLAGS_11) $(DESTFLAGS)  -I. -I.. -c $< -o $@
+#%.cuda13.o: %.cu
+#	$(CUDA_CPP) $(CUDA_CPPFLAGS_13) $(DESTFLAGS)  -I. -I.. -c $< -o $@ || $(CUDA_CPP) $(CUDA_FIX) $(CUDA_CPPFLAGS_13) $(DESTFLAGS)  -I. -I.. -c $< -o $@
 %.cuda20.o: %.cu
 	$(CUDA_CPP) $(CUDA_CPPFLAGS_20) $(DESTFLAGS)  -I. -I.. -c $< -o $@ || $(CUDA_CPP) $(CUDA_FIX) $(CUDA_CPPFLAGS_20) $(DESTFLAGS)  -I. -I.. -c $< -o $@
 

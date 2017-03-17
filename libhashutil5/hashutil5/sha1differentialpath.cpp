@@ -118,8 +118,7 @@ namespace hashutil {
 						if (outcome.size() == 0) 
 							impossible.push_back(b);
 						else {
-							if (b == 31 && outcome.size() == 2 && !outcome.constant())
-							{
+							if (b == 31 && outcome.size() == 2 && outcome(0,31)==outcome(1,31)) {
 								dF += 1<<31;
 								continue;
 							}

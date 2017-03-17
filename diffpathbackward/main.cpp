@@ -148,16 +148,6 @@ int main(int argc, char** argv)
 			("threads"
 				, po::value<int>(&container.threads)->default_value(-1)
 				, "Number of worker threads")
-
-			("uct"
-				, po::value<int>(&container.uct)->default_value(-4)
-				, "Disallow condition: Q_t[b] = c")
-			("ucb"
-				, po::value<int>(&container.ucb)->default_value(-1)
-				, "Disallow condition: Q_t[b] = c")
-			("ucc"
-				, po::value<char>(&container.ucc)->default_value('.')
-				, "Disallow condition: Q_t[b] = c")
 			;
 
 		msg.add_options()	

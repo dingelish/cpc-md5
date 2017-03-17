@@ -1,30 +1,22 @@
 ## these settings are machine and *nix distribution dependent
-
+# CPUS is the number of cores used during compiliation
+CPUS              = 32
 ## suffix for the Boost C++ libraries, i.e. "-gcc41-mt-s-1_39"
 SBL               = 
-BOOST_LIBVER      = 1_57_0
+BOOST_LIBVER      = 1_63_0
 
 ## Older boost version 1.43.0, required for reading provided binary data files
 ## patched to prevent compiler errors due to system definition of TIME_UTC
 ## may have problems with newer compilers
 ## on my system (i7-2600, FC18, gcc 4.7.2) it thought that it didn't have pthreads unless I added -D_GLIBCXX__PTHREADS to CPPFLAGS below
 #BOOST_LIBVER      = 1_43_0p
-
+# Version 1.54 and 1.63 are tested -- by Yu
 
 ## additional header and libraries directories
-INCLUDEDIRS       = -I ../libhashutil5 -I ../boost_$(BOOST_LIBVER) -I $(GCCLOCAL)/include
-LIBDIRS           = -L ../libhashutil5 -L ../boost_$(BOOST_LIBVER)/stage/lib -L $(GCCLOCAL)/lib
-
-LIBS              = -lpthread -lhashutil5-mt -lboost_thread -lboost_serialization -lboost_program_options -lboost_filesystem -lboost_iostreams -lboost_system
-ifdef GCCLOCAL
-LIBS		 += -lboost_zlib -lboost_bzip2
-else
-LIBS             += -lz -lbz2
-endif
-
-CXX		 ?= g++
-CPP               = $(CXX) -pthread $(INCLUDEDIRS) $(LIBDIRS)
-CPPFLAGS          = -march=native -O2 -pthread -std=c++11
+INCLUDEDIRS       = -I ../libhashutil5 -I ../boost_$(BOOST_LIBVER) -I /usr/include/gtkmm-3.0/gtkmm 
+LIBDIRS           = -L ../libhashutil5 -L ../boost_$(BOOST_LIBVER)/stage/lib 
+CPP               = g++ -pthread $(INCLUDEDIRS) $(LIBDIRS)
+CPPFLAGS          = -march=native -O2 -pthread  -std=c++11 -Wcpp -Wno-deprecated
 CPPFLAGSD         = -ggdb
 
 ## CELL defines, uncomment these lines to build for the CELL platform (i.e. the PlayStation 3)
@@ -36,15 +28,17 @@ CPPFLAGSD         = -ggdb
 #CELLSUFFIX        = _cell
 
 ## CUDA defines, uncomment these lines to enable CUDA builds
-#CUDA_TK           = ~/src/cuda
-#CUDA_SDK          = ~/src/CUDA_SDK
-#CUDA_CPP          = $(CUDA_TK)/bin/nvcc
-#### CUDA TK 3.0 w/ gcc 4.4.0+ doesn't work without the -D__builtin_stdarg_start=__builtin_va_start
-#### also comment out the conflicting 3 lines in $(CUDA_TK)/include/math_functions.h
-#CUDA_FIX	  = -Xcompiler -D__builtin_stdarg_start=__builtin_va_start 
-#CUDA_CPPFLAGS     = -O2 -DUNIX --compiler-options -fno-strict-aliasing -Xcompiler "$(CPPFLAGS) $(INCLUDEDIRS)" $(INCLUDEDIRS) -I $(CUDA_TK)/include -I $(CUDA_SDK)/C/common/inc -I $(CUDA_SDK)/shared/inc  $(INCLUDES) 
-#CUDA_CPPFLAGS_10  = $(CUDA_CPPFLAGS) -gencode=arch=compute_10,code=\"sm_10,compute_10\"
-#CUDA_CPPFLAGS_11  = $(CUDA_CPPFLAGS) -gencode=arch=compute_11,code=\"sm_11,compute_11\"
-#CUDA_CPPFLAGS_13  = $(CUDA_CPPFLAGS) -gencode=arch=compute_13,code=\"sm_13,compute_13\"
-#CUDA_CPPFLAGS_20  = $(CUDA_CPPFLAGS) -gencode=arch=compute_20,code=\"sm_20,compute_20\"
-#CUDA_LINKFLAGS    = -fPIC -L $(CUDA_TK)/lib64 -L $(CUDA_SDK)/C/lib -L $(CUDA_SDK)/C/common/lib/linux -L $(CUDA_SDK)/shared/lib -lcudart -lcutil_x86_64 -lshrutil_x86_64 $(LIBRARIES)
+## Start from CUDA 5.0, we need the CUDA sample dir for compile
+## CUDA 7.5 is tested -- by Yu
+CUDA_TK           = /usr/local/cuda-7.5
+CUDA_SDK          = /home/yu/NVIDIA_CUDA-7.5_Samples
+CUDA_CPP          = $(CUDA_TK)/bin/nvcc
+CUDA_SAMPLE_DIR   = /home/yu/NVIDIA_CUDA-7.5_Samples/common
+CUDA_EXT_INC      = -I $(CUDA_SAMPLE_DIR)/inc -I $(CUDA_TK)/include
+CUDA_EXT_LIB      = -L $(CUDA_SAMPLE_DIR)/lib -L $(CUDA_TK)/lib64
+### CUDA TK 3.0 w/ gcc 4.4.0+ doesn't work without the -D__builtin_stdarg_start=__builtin_va_start
+### also comment out the conflicting 3 lines in $(CUDA_TK)/include/math_functions.h
+CUDA_FIX	  = -Xcompiler -D__builtin_stdarg_start=__builtin_va_start 
+CUDA_CPPFLAGS     = -O2 $(INCLUDEDIRS) $(CUDA_EXT_INC) $(LIBDIRS) $(CUDA_EXT_LIB)
+CUDA_CPPFLAGS_20  = $(CUDA_CPPFLAGS) -gencode=arch=compute_20,code=\"sm_20,compute_20\"
+CUDA_LINKFLAGS    = -fPIC -L $(CUDA_TK)/lib64 -L $(CUDA_SDK)/lib -L $(CUDA_SDK)/common/lib/linux -L $(CUDA_SDK)/shared/lib -lcudart $(LIBRARIES)

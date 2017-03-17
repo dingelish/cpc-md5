@@ -1,12 +1,13 @@
 #!/bin/bash
 
-export BIRTHDAYSEARCH=../md5birthdaysearch
+export CPUS=32
+export CUDAS=3
+export TTT=12
+export BIRTHDAYSEARCH=../md5birthdaysearch_cuda
 export HELPER=../md5diffpathhelper
 export FORWARD=../md5diffpathforward
 export BACKWARD=../md5diffpathbackward
 export CONNECT=../md5diffpathconnect
-export CPUS=`cat /proc/cpuinfo | grep "^processor" | wc -l`
-export TTT=12
 
 rm -r data 2>/dev/null
 mkdir data || exit 1
@@ -23,7 +24,9 @@ else
 fi
 
 if [ "$3" = "" ] ; then
-	$BIRTHDAYSEARCH --inputfile1 "$file1" --inputfile2 "$file2" --hybridbits 0 --pathtyperange 2 --maxblocks 9 --maxmemory 100 --threads $CPUS
+	echo "birthday searching\n"
+	#$BIRTHDAYSEARCH --inputfile1 "$file1" --inputfile2 "$file2" --hybridbits 0 --pathtyperange 2 --maxblocks 8 --maxmemory 100 --threads $((CPUS-CUDAS)) --cuda_enable
+	$BIRTHDAYSEARCH --inputfile1 "$file1" --inputfile2 "$file2" --hybridbits 0 --pathtyperange 2 --maxblocks 9 --maxmemory 100 --threads 1 --cuda_enable
 else
 	if [ "$4" != "" ]; then
 		cp $file1 file1.bin
@@ -32,18 +35,21 @@ else
 fi
 
 function doforward {
-	$FORWARD -w $1 -f $1/lowerpath.bin --normalt01 -t 1 --trange $(($TTT-2)) || exit 1
+	echo "forward"
+	$FORWARD --threads $((CPUS/2)) -w $1 -f $1/lowerpath.bin.gz --normalt01 -t 1 --trange $(($TTT-2)) || exit 1
 }
 
 function dobackward {
-	$BACKWARD -w $1 -f $1/upperpath.bin -t 34 --trange 4 -a 65536 -q 128 || exit 1
-	$BACKWARD -w $1 -t 29 --trange 8 || exit 1
-	$BACKWARD -w $1 -t 20 -a 16384 || exit 1
-	$BACKWARD -w $1 -t 19 --trange $((18-$TTT-4)) || exit 1
-	$BACKWARD -w $1 -t $(($TTT+4)) --maxweight 13 --minweight 10 || exit 1
+	echo "backward"
+	$BACKWARD --threads $((CPUS/2)) -w $1 -f $1/upperpath.bin.gz -t 34 --trange 4 -a 65536 -q 128 || exit 1
+	$BACKWARD --threads $((CPUS/2)) -w $1 -t 29 --trange 8 || exit 1
+	$BACKWARD --threads $((CPUS/2)) -w $1 -t 20 -a 16384 || exit 1
+	$BACKWARD --threads $((CPUS/2)) -w $1 -t 19 --trange $((18-$TTT-4)) || exit 1
+	$BACKWARD --threads $((CPUS/2)) -w $1 -t $(($TTT+4)) --maxweight 13 --minweight 10 || exit 1
 }
 
 function testcoll {
+	echo "testcoll"
 	for f in $1/coll1_*; do
 		if [ -e `echo $f | sed s/coll1/coll2/` ]; then return 0; fi
 	done
@@ -51,11 +57,12 @@ function testcoll {
 }
 
 function doconnect {
+	echo "connect"
 	let c=0
 	CPIDS=""
 	while [ $c -lt $CPUS ]; do
 		mkdir $1/connect$c
-		$CONNECT -w $1/connect$c -t $TTT --inputfilelow $1/paths$(($TTT-1))_0of1.bin --inputfilehigh $1/paths$(($TTT+4))_0of1.bin -m $CPUS -i $c &
+		$CONNECT --threads 1 -w $1/connect$c -t $TTT --inputfilelow $1/paths$(($TTT-1))_0of1.bin.gz --inputfilehigh $1/paths$(($TTT+4))_0of1.bin.gz -m $CPUS -i $c &
 		CPIDS="$CPIDS $!"
 		let c=c+1
 	done
@@ -81,15 +88,16 @@ function doconnect {
 }
 
 function docollfind {
+	echo "collfind"
 	cf=""
-	for f in `ls -t $2/bestpath*.bin`; do	
-		$HELPER -w $1 --findcoll $f 2>&1 > $2/helper.log &
+	for f in `ls -t $2/bestpath*.bin.gz`; do	
+		$HELPER --threads 1 -w $1 --findcoll $f 2>&1 > $2/helper.log &
 		pid=$!
 		sleep 10
 		kill $pid
 		if [ `grep "^[.].*$" $2/helper.log | wc -l` -gt 0 ]; then cf=$f; break; fi
 	done
-	$HELPER -w $1 --findcoll $cf &
+	$HELPER --threads 1 -w $1 --findcoll $cf &
 	CPID=$!
 	while true; do
 		if testcoll $1 ; then break; fi
@@ -106,7 +114,7 @@ let k=0$3
 while true; do
 	rm -r workdir$k 2>/dev/null
 	mkdir workdir$k
-	$HELPER -w workdir$k --startnearcollision file1_$k.bin file2_$k.bin --pathtyperange 2 || exit
+	$HELPER --threads $((CPUS)) -w workdir$k --startnearcollision file1_$k.bin file2_$k.bin --pathtyperange 2 || exit
 	cp *.cfg workdir$k
 
 	if [ $CPUS -gt 1 ]; then

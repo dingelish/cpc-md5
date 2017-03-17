@@ -20,7 +20,7 @@ DEST            = ../md5birthdaysearch
 OBJECTS         = main.o dostep.o birthday.o storage.o ppe_main.o
 HEADERS         = config.h birthday_types.hpp distribution.hpp main.hpp spu_program_data.hpp storage.hpp
 DESTFLAGS       =
-LIBS            ?= -lhashutil5-mt -lpthread -lboost_iostreams$(SBL) -lboost_serialization$(SBL) -lboost_filesystem$(SBL) -lboost_program_options$(SBL) -lboost_thread$(SBL) -lboost_system$(SBL) -lbz2 -lz -lrt
+LIBS            = -lhashutil5-mt -lpthread -lboost_iostreams$(SBL) -lboost_serialization$(SBL) -lboost_filesystem$(SBL) -lboost_program_options$(SBL) -lboost_thread$(SBL) -lboost_system$(SBL) -lbz2 -lz -lrt
 MKPROPER        = *~
 
 

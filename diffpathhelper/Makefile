@@ -5,7 +5,7 @@ DEST            = ../md5diffpathhelper
 OBJECTS         = main.o startnearcollision.o collisionfinding.o convert.o
 HEADERS         = main.hpp
 DESTFLAGS	=  
-LIBS            ?= -lhashutil5-mt -lpthread -lboost_iostreams$(SBL) -lboost_serialization$(SBL) -lboost_filesystem$(SBL) -lboost_program_options$(SBL) -lboost_system$(SBL) -lboost_thread$(SBL) -lbz2 -lz -lrt
+LIBS            = -lhashutil5-mt -lpthread -lboost_iostreams$(SBL) -lboost_serialization$(SBL) -lboost_filesystem$(SBL) -lboost_program_options$(SBL) -lboost_system$(SBL) -lboost_thread$(SBL) -lbz2 -lz -lrt
 MKPROPER	= *~
 
 

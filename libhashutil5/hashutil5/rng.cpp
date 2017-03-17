@@ -18,7 +18,6 @@
 \**************************************************************************/
 
 #include <time.h>
-#include <iostream>
 #include "rng.hpp"
 
 #if defined(__linux__) || defined (__FreeBSD__)
@@ -31,7 +30,7 @@ namespace hashutil {
 	{
 		int fd;
 		if ((fd = open("/dev/urandom", O_RDONLY)) < 0) return;
-		read(fd, reinterpret_cast<char*>(buf), 256*4);
+		read(fd, reinterpret_cast<char*>(buf), sizeof(buf));
 		close(fd);
 	}
 }
@@ -44,7 +43,7 @@ namespace hashutil {
 		HCRYPTPROV g_hCrypt;
 		if(!CryptAcquireContext(&g_hCrypt,NULL,NULL,PROV_RSA_FULL,CRYPT_VERIFYCONTEXT))
 			return;
-		CryptGenRandom(g_hCrypt,256*4,reinterpret_cast<BYTE*>(buf));
+		CryptGenRandom(g_hCrypt,sizeof(buf),reinterpret_cast<BYTE*>(buf));
 		CryptReleaseContext(g_hCrypt,0);
 	}
 }
@@ -52,7 +51,6 @@ namespace hashutil {
 namespace hashutil {
 	void getosrnd(uint32 buf[256])
 	{
-		std::cout << "Warning: no OS randomness!" << std::endl;
 		// without OS randomness
 		// use fact that buf is uninitialized
 	}

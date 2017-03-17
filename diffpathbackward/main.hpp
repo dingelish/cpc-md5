@@ -61,16 +61,7 @@ public:
 		, pathsout(0), size(0), count(0), count_balanced(0)
 		, condcount(0), verified(0), verifiedbad(0), maxQ26upcond(1024),minweight(0)
 		, fillfraction(0), threads(1)
-		, uct(-4), ucb(-1), ucc('.')
 	{
-		if (uct < -3 || uct > 64 || ucb < 0 || ucb > 32
-			|| (ucc != '0' && ucc != '1' && ucc != '^' && ucc != '!' && ucc != 'm' && ucc != '#')
-			)
-		{
-			uct = -4;
-			ucb = -1;
-			ucc = '.';
-		}
 		for (unsigned k = 0; k < 16; ++k)
 			m_diff[k] = 0;
 	}
@@ -138,9 +129,6 @@ public:
 
 	void push_back(const differentialpath& path, unsigned cond = 0)
 	{ 
-		if (!test_uc(path))
-			return;
-
 		if (cond == 0)
 		{
 			for (int k = int(t)-2; k <= min(tend,path.tend()-1) && k<=64; ++k)
@@ -234,53 +222,6 @@ public:
 		}
 	}
 
-	bool test_uc(const differentialpath& path)
-	{
-		if (ucb != -1 && uct >= path.tbegin() + 1 && uct < path.tend() - 1)
-		{
-			switch (ucc)
-			{
-			default: throw std::runtime_error("test_uc: value ucc not allowed");
-			case '0':
-				return !(path(uct, ucb) == bc_zero || path(uct, ucb) == bc_plus);
-			case '1':
-				return !(path(uct, ucb) == bc_one || path(uct, ucb) == bc_minus);
-			case '^':
-				if (uct - 1 < path.tbegin()+1) return true;
-				if (path(uct, ucb) == bc_prev) return false;
-				if (path(uct - 1, ucb) == bc_next) return false;
-				if ((path(uct - 1, ucb) == bc_zero || path(uct - 1, ucb) == bc_plus) && (path(uct, ucb) == bc_zero || path(uct, ucb) == bc_plus)) return false;
-				if ((path(uct - 1, ucb) == bc_one || path(uct - 1, ucb) == bc_minus) && (path(uct, ucb) == bc_one || path(uct, ucb) == bc_minus)) return false;
-				return true;
-			case '!':
-				if (uct - 1 < path.tbegin()+1) return true;
-				if (path(uct, ucb) == bc_prevn) return false;
-				if (path(uct - 1, ucb) == bc_nextn) return false;
-				if ((path(uct - 1, ucb) == bc_zero || path(uct - 1, ucb) == bc_plus) && (path(uct, ucb) == bc_one || path(uct, ucb) == bc_minus)) return false;
-				if ((path(uct - 1, ucb) == bc_one || path(uct - 1, ucb) == bc_minus) && (path(uct, ucb) == bc_zero || path(uct, ucb) == bc_plus)) return false;
-				return true;
-			case 'm':
-				if (uct - 2 < path.tbegin()+1) return true;
-				if (path(uct, ucb) == bc_prev2) return false;
-				if (path(uct - 2, ucb) == bc_next2) return false;
-				if ((path(uct, ucb) == bc_prev || path(uct - 1, ucb) == bc_next) && (path(uct-2,ucb) == bc_next || path(uct-1,ucb) == bc_prev)) return false;
-				if ((path(uct - 2, ucb) == bc_zero || path(uct - 2, ucb) == bc_plus) && (path(uct, ucb) == bc_zero || path(uct, ucb) == bc_plus)) return false;
-				if ((path(uct - 2, ucb) == bc_one || path(uct - 2, ucb) == bc_minus) && (path(uct, ucb) == bc_one || path(uct, ucb) == bc_minus)) return false;
-				return true;
-			case '#':
-				if (uct - 2 < path.tbegin()+1) return true;
-				if (path(uct, ucb) == bc_prev2n) return false;
-				if (path(uct - 2, ucb) == bc_next2n) return false;
-				if ((path(uct, ucb) == bc_prev || path(uct - 1, ucb) == bc_next) && (path(uct - 2, ucb) == bc_nextn || path(uct - 1, ucb) == bc_prevn)) return false;
-				if ((path(uct, ucb) == bc_prevn || path(uct - 1, ucb) == bc_nextn) && (path(uct - 2, ucb) == bc_nextn || path(uct - 1, ucb) == bc_prevn)) return false;
-				if ((path(uct - 2, ucb) == bc_zero || path(uct - 2, ucb) == bc_plus) && (path(uct, ucb) == bc_one || path(uct, ucb) == bc_minus)) return false;
-				if ((path(uct - 2, ucb) == bc_one || path(uct - 2, ucb) == bc_minus) && (path(uct, ucb) == bc_zero || path(uct, ucb) == bc_plus)) return false;
-				return true;
-			}
-		}
-		return true;
-	}
-
 	uint32 m_diff[16];
 
 	unsigned t, trange;
@@ -313,10 +254,7 @@ public:
 	double fillfraction;
 
 	int threads;
-
-	int uct, ucb;
-	char ucc;
-};	
+};
 
 
 

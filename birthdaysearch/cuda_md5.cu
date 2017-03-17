@@ -23,10 +23,32 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-#include <cutil_inline.h>
-#include <cutil.h>
-#include <cuda.h>
 #include <boost/cstdint.hpp>
+
+#include <cuda.h>
+
+#include <helper_cuda.h>
+#include <helper_cuda_gl.h>
+#include <helper_functions.h>
+#include <helper_timer.h>
+
+//#  define checkCudaErrors_NO_SYNC( call) do {                                \
+//    cudaError err = call;                                                    \
+//    if( cudaSuccess != err) {                                                \
+//        fprintf(stderr, "Cuda error in file '%s' in line %i : %s.\n",        \
+//                __FILE__, __LINE__, cudaGetErrorString( err) );              \
+//        exit(EXIT_FAILURE);                                                  \
+//    } } while (0)
+
+//#  define checkCudaErrors( call) do {                                        \
+//    checkCudaErrors_NO_SYNC(call);                                            \
+//    cudaError err = cudaThreadSynchronize();                                 \
+//    if( cudaSuccess != err) {                                                \
+//        fprintf(stderr, "Cuda error in file '%s' in line %i : %s.\n",        \
+//                __FILE__, __LINE__, cudaGetErrorString( err) );              \
+//        exit(EXIT_FAILURE);                                                  \
+//    } } while (0)
+
 
 using namespace std;
 
@@ -98,13 +120,13 @@ bool cuda_device::init(uint32 device, const uint32 ihv1b[4], const uint32 ihv2b[
 	detail->device = device;
 	
     int deviceCount;
-    CUDA_SAFE_CALL( cudaGetDeviceCount(&deviceCount) );
+    checkCudaErrors ( cudaGetDeviceCount(&deviceCount) );
     if (deviceCount == 0) {
         cout << "There is no device supporting CUDA!" << endl;
         return false;
 	}
     cudaDeviceProp deviceProp;
-    CUDA_SAFE_CALL( cudaGetDeviceProperties(&deviceProp, device) );
+    checkCudaErrors( cudaGetDeviceProperties(&deviceProp, device) );
     if (deviceProp.major == 9999) {
 		cout << "Emulation device found." << endl;
 		return false;
@@ -112,10 +134,10 @@ bool cuda_device::init(uint32 device, const uint32 ihv1b[4], const uint32 ihv2b[
 	cout << "CUDA device " << device << ": " << deviceProp.name << " (" << 8 * deviceProp.multiProcessorCount << " cores)" << endl;
 	detail->blocks = 16 * deviceProp.multiProcessorCount;
 	
-	CUDA_SAFE_CALL( cudaSetDevice(device) );
-	CUDA_SAFE_CALL( cudaSetDeviceFlags( cudaDeviceBlockingSync ) );
+	checkCudaErrors( cudaSetDevice(device) );
+	//checkCudaErrors ( cudaSetDeviceFlags( cudaDeviceBlockingSync ) );
 
-	CUDA_SAFE_CALL( cudaMallocHost( (void**)(&(detail->buffer_host)), 122880 * sizeof(trail_type) ) );
+	checkCudaErrors( cudaMallocHost( (void**)(&(detail->buffer_host)), 122880 * sizeof(trail_type) ) );
 	
 	uint32 pc1[4], pc2[4];
 	uint32 a = ihv1b[0], b = ihv1b[1], c = ihv1b[2], d = ihv1b[3];
@@ -149,16 +171,16 @@ bool cuda_device::init(uint32 device, const uint32 ihv1b[4], const uint32 ihv2b[
 	MD5_FF ( a, b, c, d, msg2b[12],  7, 1804603682); /* 13 */
 	pc2[0] = a; pc2[1] = b; pc2[2] = c; pc2[3] = d;
 
-	CUDA_SAFE_CALL( cudaMemcpyToSymbol(msg1, msg1b, sizeof(msg1)) );
-	CUDA_SAFE_CALL( cudaMemcpyToSymbol(msg2, msg2b, sizeof(msg2)) );
-	CUDA_SAFE_CALL( cudaMemcpyToSymbol(ihv1, ihv1b, sizeof(ihv1)) );
-	CUDA_SAFE_CALL( cudaMemcpyToSymbol(ihv2, ihv2b, sizeof(ihv2)) );
-	CUDA_SAFE_CALL( cudaMemcpyToSymbol(ihv2mod, ihv2modb, sizeof(ihv2mod)) );
-	CUDA_SAFE_CALL( cudaMemcpyToSymbol(precomp1, pc1, sizeof(pc1)) );
-	CUDA_SAFE_CALL( cudaMemcpyToSymbol(precomp2, pc2, sizeof(pc2)) );
-	CUDA_SAFE_CALL( cudaMemcpyToSymbol(hybridmask, &hmask, sizeof(hmask)) );
-	CUDA_SAFE_CALL( cudaMemcpyToSymbol(distinguishedpointmask, &dpmask, sizeof(dpmask)) );
-	CUDA_SAFE_CALL( cudaMemcpyToSymbol(maximumpathlength, &maxlen, sizeof(maxlen)) );
+	checkCudaErrors( cudaMemcpyToSymbol(msg1, msg1b, sizeof(msg1)) );
+	checkCudaErrors( cudaMemcpyToSymbol(msg2, msg2b, sizeof(msg2)) );
+	checkCudaErrors( cudaMemcpyToSymbol(ihv1, ihv1b, sizeof(ihv1)) );
+	checkCudaErrors( cudaMemcpyToSymbol(ihv2, ihv2b, sizeof(ihv2)) );
+	checkCudaErrors( cudaMemcpyToSymbol(ihv2mod, ihv2modb, sizeof(ihv2mod)) );
+	checkCudaErrors( cudaMemcpyToSymbol(precomp1, pc1, sizeof(pc1)) );
+	checkCudaErrors( cudaMemcpyToSymbol(precomp2, pc2, sizeof(pc2)) );
+	checkCudaErrors( cudaMemcpyToSymbol(hybridmask, &hmask, sizeof(hmask)) );
+	checkCudaErrors( cudaMemcpyToSymbol(distinguishedpointmask, &dpmask, sizeof(dpmask)) );
+	checkCudaErrors( cudaMemcpyToSymbol(maximumpathlength, &maxlen, sizeof(maxlen)) );
 	
 	cuda_md5_init<<<detail->blocks, 256>>>();
 	
@@ -586,13 +608,13 @@ int get_num_cuda_devices()
 void cuda_device_query() 
 {
     int deviceCount;
-    cutilSafeCall(cudaGetDeviceCount(&deviceCount));
+    checkCudaErrors(cudaGetDeviceCount(&deviceCount));
     if (deviceCount == 0)
         printf("There is no device supporting CUDA\n");
     int dev;
     for (dev = 0; dev < deviceCount; ++dev) {
         cudaDeviceProp deviceProp;
-        cutilSafeCall(cudaGetDeviceProperties(&deviceProp, dev));
+        checkCudaErrors(cudaGetDeviceProperties(&deviceProp, dev));
         if (dev == 0) {
             if (deviceProp.major == 9999 && deviceProp.minor == 9999)
                 printf("There is no device supporting CUDA.\n");
@@ -606,7 +628,7 @@ void cuda_device_query()
                deviceProp.major);
         printf("  Minor revision number:                         %d\n",
                deviceProp.minor);
-        printf("  Total amount of global memory:                 %u bytes\n",
+        printf("  Total amount of global memory:                 %lu bytes\n",
                deviceProp.totalGlobalMem);
     #if CUDART_VERSION >= 2000
         printf("  Number of multiprocessors:                     %d\n",
@@ -614,9 +636,9 @@ void cuda_device_query()
         printf("  Number of cores:                               %d\n",
                8 * deviceProp.multiProcessorCount);
     #endif
-        printf("  Total amount of constant memory:               %u bytes\n",
+        printf("  Total amount of constant memory:               %lu bytes\n",
                deviceProp.totalConstMem); 
-        printf("  Total amount of shared memory per block:       %u bytes\n",
+        printf("  Total amount of shared memory per block:       %lu bytes\n",
                deviceProp.sharedMemPerBlock);
         printf("  Total number of registers available per block: %d\n",
                deviceProp.regsPerBlock);
@@ -632,9 +654,9 @@ void cuda_device_query()
                deviceProp.maxGridSize[0],
                deviceProp.maxGridSize[1],
                deviceProp.maxGridSize[2]);
-        printf("  Maximum memory pitch:                          %u bytes\n",
+        printf("  Maximum memory pitch:                          %lu bytes\n",
                deviceProp.memPitch);
-        printf("  Texture alignment:                             %u bytes\n",
+        printf("  Texture alignment:                             %lu bytes\n",
                deviceProp.textureAlignment);
         printf("  Clock rate:                                    %.2f GHz\n",
                deviceProp.clockRate * 1e-6f);

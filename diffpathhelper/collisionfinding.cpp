@@ -222,8 +222,8 @@ void collisionfinding_thread::do_step26()
 	uint32 x = xrng128();
 	string filename1 = workdir + "/coll1_" + boost::lexical_cast<string>(x);
 	string filename2 = workdir + "/coll2_" + boost::lexical_cast<string>(x);
-	ofstream of1(filename1.c_str(), ios::binary);
-	ofstream of2(filename2.c_str(), ios::binary);
+	ofstream of1(filename1.c_str(), ios::out | ios::binary | ios::app);
+	ofstream of2(filename2.c_str(), ios::out | ios::binary | ios::app);
 	if ((!of1) || (!of2)) {
 		cerr << "Cannot open output files!" << endl;
 	} else {
@@ -714,7 +714,7 @@ void collisionfinding_thread::do_step18()
 							UPDATE(19);
 							uint32 p2T19 = pT19 + md5_gg(Q19, Q[offset+18], Q[offset+17]);
 							uint32 Q20testval = Qvalue[offset+20] ^ (Qprev[offset+20]&Q19);
-							for (Q1Q2m0it = Q1Q2m0withm1ok.begin(); Q1Q2m0it != Q1Q2m0withm1ok.end(); ++Q1Q2m0it)
+							for (Q1Q2m0it = Q1Q2m0withm1ok.begin(); Q1Q2m0it != Q1Q2m0withm1ok.end(); ++Q1Q2m0it)							
 							{
 								uint32 T19 = p2T19 + Q1Q2m0it->third;
 								uint32 Q20 = Q19 + rotate_left(T19, 20);
@@ -927,7 +927,6 @@ void collisionfinding_thread::do_step16()
 				
 				Q1Q2m0withm1ok.push_back( make_triple(Q1,Q2,m0) );
 			} while (Q1cur != 0 && Q1Q2m0withm1ok.size() < (1<<20));
-			cout << "Q1Q2m0withm1ok: " << Q1Q2m0withm1ok.size() << endl;
 
 			if (isinfinite) { cout << "." << flush; isinfinite = false; }
 			do_step17();
@@ -1147,18 +1146,6 @@ void collisionfinding_thread::filltables()
 	Q[1] = Qvalue[1]; Q2[1] = Q[1] + dQ[1];
 	Q[2] = Qvalue[2]; Q2[2] = Q[2] + dQ[2];
 	Q[3] = Qvalue[3]; Q2[3] = Q[3] + dQ[3];
-	
-	
-	cout << "20: Q5m5tunnel      = " << hw(Q5m5tunnel) << endl;
-	cout << "20: Q4m5tunnel      = " << hw(Q4m5tunnel) << endl;
-	cout << "20: Q14m6Q3m5tunnel = " << hw(Q14m6Q3m5tunnel) << endl;
-	cout << "21: Q10m10tunnel    = " << hw(Q10m10tunnel) << endl;
-	cout << "21: Q9m10tunnel     = " << hw(Q9m10tunnel) << endl;
-	cout << "22: Q8Q12m15tunnel  = " << hw(Q8Q12m15tunnel) << endl;
-	cout << "23: Q4m4tunnel      = " << hw(Q4m4tunnel) << endl;
-	cout << "24: Q9m9tunnel      = " << hw(Q9m9tunnel) << endl;
-	cout << "25: Q14Q3m14tunnel  = " << hw(Q14Q3m14tunnel) << endl;
-
 }
 
 

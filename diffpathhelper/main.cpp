@@ -233,9 +233,15 @@ unsigned load_block(istream& i, uint32 block[])
 	return len;
 }
 
-void save_block(ostream& o, uint32 block[])
+void save_block(ofstream& o, uint32 block[])
 {
+cout << "NAT - writing to a file" << endl;
+if(o.fail()){ 
+    cout << "Could not write the file" << endl; 
+}
 	for (unsigned k = 0; k < 16; ++k)
 		for (unsigned c = 0; c < 4; ++c)
 			o << (unsigned char)((block[k]>>(c*8))&0xFF);
+o.flush();
+o.close();
 }

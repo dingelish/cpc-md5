@@ -39,7 +39,7 @@ extern boost::mutex mut;
 extern std::string workdir;
 
 unsigned load_block(istream& i, uint32 block[]);
-void save_block(ostream& o, uint32 block[]);
+void save_block(ofstream& o, uint32 block[]);
 
 struct parameters_type {
 	uint32 m_diff[16];
