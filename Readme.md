@@ -1,4 +1,4 @@
-# MD5-CPC
+# CPC-MD5
 This project is forked from Marc Steven's Hashclash project [hashclash](https://marc-stevens.nl/p/hashclash/) and follows GPL.
 
 # Details
